@@ -1,5 +1,4 @@
 package com.miller;
-
 public class Location {
     private int row;
     private int col;
@@ -23,6 +22,10 @@ public class Location {
 
     public void setCol(int col) {
         this.col = col;
+    }
+
+    public boolean equals(Location other) {
+        return row == other.row && col == other.col;
     }
 
     @Override
