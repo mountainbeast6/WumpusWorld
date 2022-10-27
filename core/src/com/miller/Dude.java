@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Stack;
 
 public class Dude {
@@ -39,8 +40,6 @@ public class Dude {
     public void pathingSolution(){
         int[][] map=weightMap();
         Location target = findTarget(map);
-
-
     }
 
     private int[][] weightMap() {
@@ -48,6 +47,7 @@ public class Dude {
         Location looking;
         ArrayList<Location> lookNeighbors;
         boolean suckMyCock=false;
+        boolean hintsAround;
         for (int i=0;i<myWorld.getNumRows();i++){
             for(int j=0;i<myWorld.getNumCols();i++){
                 looking = new Location(i,j);
@@ -60,24 +60,32 @@ public class Dude {
                     suckMyCock=false;
                 }
                 if(suckMyCock) {
-                    if (myWorld.getTileId(looking) == 0) {
+                    if (myWorld.getTileId(looking) == 0&&myWorld.visible[i][j]) {
                         map[i][j] = 10;
-                    } else if (myWorld.getTileId(looking) < 4) {
+                    } else if (myWorld.getTileId(looking) < 4&&myWorld.visible[i][j]) {
                         map[i][j] = 20;
-                    } else if (myWorld.getTileId(looking) == 4) {
+                    } else if (myWorld.getTileId(looking) == 4&&myWorld.visible[i][j]) {
                         map[i][j] = 0;
-                    } else if (myWorld.getTileId(looking) < 14) {
+                    } else if (myWorld.getTileId(looking) < 14&&myWorld.visible[i][j]) {
                         map[i][j] = 15;
                     }
-                    else if (myWorld.getTileId(looking) == 14) {
+                    else if (myWorld.getTileId(looking) == 14&&myWorld.visible[i][j]) {
                         map[i][j] = 5;
                     }
                     else{
                         map[i][j]=10;
                     }
+                    for(int k =0;k<lookNeighbors.size();k++){
+                        if(map[lookNeighbors.get(k).getRow()][lookNeighbors.get(k).getCol()]<14&&map[lookNeighbors.get(k).getRow()][lookNeighbors.get(k).getCol()]>4){
+                            hintsAround=true;
+                            break;
+                        }
+                        hintsAround=false;
+                    }
                 }
             }
         }
+        System.out.println(Arrays.deepToString(map));
         return map;
     }
 
@@ -87,7 +95,7 @@ public class Dude {
 
     //this method makes ONE step
     public void step() {
-        randomAISolution();
+        pathingSolution();
     }
 
 
