@@ -4,14 +4,19 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Stack;
 
 public class Dude {
     private Location loc;
+    private int UP=1,RIGHT=2,LEFT=3,DOWN=4;
+    private int direction=UP;
     private WumpusWorld myWorld;
     private Texture texture;
     private boolean hasGold = false;
     private int totalSteps = 0;
     private boolean killedWumpus = false;
+    private Stack<Location> PathFinding;
 
     public Dude(Location loc, WumpusWorld myWorld) {
         this.loc = loc;
@@ -31,6 +36,54 @@ public class Dude {
         else
             moveUp();
     }
+    public void pathingSolution(){
+        int[][] map=weightMap();
+        Location target = findTarget(map);
+
+
+    }
+
+    private int[][] weightMap() {
+        int map[][]=new int[myWorld.getNumRows()][myWorld.getNumCols()];
+        Location looking;
+        ArrayList<Location> lookNeighbors;
+        boolean suckMyCock=false;
+        for (int i=0;i<myWorld.getNumRows();i++){
+            for(int j=0;i<myWorld.getNumCols();i++){
+                looking = new Location(i,j);
+                lookNeighbors=myWorld.getNeighbors(looking);
+                for(int k =0;k<lookNeighbors.size();k++){
+                    if(myWorld.visible[lookNeighbors.get(k).getRow()][lookNeighbors.get(k).getCol()]){
+                        suckMyCock=true;
+                        break;
+                    }
+                    suckMyCock=false;
+                }
+                if(suckMyCock) {
+                    if (myWorld.getTileId(looking) == 0) {
+                        map[i][j] = 10;
+                    } else if (myWorld.getTileId(looking) < 4) {
+                        map[i][j] = 20;
+                    } else if (myWorld.getTileId(looking) == 4) {
+                        map[i][j] = 0;
+                    } else if (myWorld.getTileId(looking) < 14) {
+                        map[i][j] = 15;
+                    }
+                    else if (myWorld.getTileId(looking) == 14) {
+                        map[i][j] = 5;
+                    }
+                    else{
+                        map[i][j]=10;
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    private Location findTarget(int[][]map) {
+        return null;
+    }
 
     //this method makes ONE step
     public void step() {
@@ -47,6 +100,7 @@ public class Dude {
             loc.setCol(loc.getCol() + 1);
             myWorld.makeVisible(loc);
             totalSteps++;
+            direction=RIGHT;
         }
     }
 
@@ -55,6 +109,7 @@ public class Dude {
             loc.setCol(loc.getCol() - 1);
             myWorld.makeVisible(loc);
             totalSteps++;
+            direction=LEFT;
         }
     }
 
@@ -63,6 +118,7 @@ public class Dude {
             loc.setRow(loc.getRow()-1);
             myWorld.makeVisible(loc);
             totalSteps++;
+            direction=UP;
         }
     }
 
@@ -71,6 +127,7 @@ public class Dude {
             loc.setRow(loc.getRow()+1);
             myWorld.makeVisible(loc);
             totalSteps++;
+            direction=DOWN;
         }
     }
 
@@ -101,4 +158,5 @@ public class Dude {
         Point myPoint = myWorld.convertRowColToCoords(loc);
         spriteBatch.draw(texture,(int)myPoint.getX(),(int)myPoint.getY());
     }
+
 }
