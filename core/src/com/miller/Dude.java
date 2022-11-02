@@ -17,6 +17,8 @@ public class Dude {
     private boolean hasGold = false;
     private int totalSteps = 0;
     private boolean killedWumpus = false;
+    private boolean[][] acorn;
+    int[][] map;
     private Stack<Location> PathFinding;
 
     public Dude(Location loc, WumpusWorld myWorld) {
@@ -24,6 +26,7 @@ public class Dude {
         this.myWorld = myWorld;
         texture = new Texture("guy.png");
         myWorld.makeVisible(loc);
+        acorn=new boolean[myWorld.getNumRows()][myWorld.getNumCols()];
     }
 
     public void randomAISolution() {
@@ -38,8 +41,12 @@ public class Dude {
             moveUp();
     }
     public void pathingSolution(){
-        int[][] map=weightMap();
-        Location target = findTarget(map);
+        map=weightMap();
+        Location target = findTarget(acorn, loc);
+        loc.setCol(target.getCol());
+        loc.setRow(target.getRow());
+        myWorld.makeVisible(loc);
+        totalSteps++;
     }
 
     private int[][] weightMap() {
@@ -47,9 +54,11 @@ public class Dude {
         Location looking;
         ArrayList<Location> lookNeighbors;
         boolean suckMyCock=false;
-        boolean hintsAround;
+        boolean hintsAround=true;
+        int couner =0;
         for (int i=0;i<myWorld.getNumRows();i++){
-            for(int j=0;i<myWorld.getNumCols();i++){
+            for(int j=0;j<myWorld.getNumCols();j++){
+                couner=0;
                 looking = new Location(i,j);
                 lookNeighbors=myWorld.getNeighbors(looking);
                 for(int k =0;k<lookNeighbors.size();k++){
@@ -60,36 +69,54 @@ public class Dude {
                     suckMyCock=false;
                 }
                 if(suckMyCock) {
-                    if (myWorld.getTileId(looking) == 0&&myWorld.visible[i][j]) {
-                        map[i][j] = 10;
-                    } else if (myWorld.getTileId(looking) < 4&&myWorld.visible[i][j]) {
-                        map[i][j] = 20;
-                    } else if (myWorld.getTileId(looking) == 4&&myWorld.visible[i][j]) {
-                        map[i][j] = 0;
-                    } else if (myWorld.getTileId(looking) < 14&&myWorld.visible[i][j]) {
-                        map[i][j] = 15;
-                    }
-                    else if (myWorld.getTileId(looking) == 14&&myWorld.visible[i][j]) {
-                        map[i][j] = 5;
-                    }
-                    else{
-                        map[i][j]=10;
-                    }
+                    couner=0;
                     for(int k =0;k<lookNeighbors.size();k++){
-                        if(map[lookNeighbors.get(k).getRow()][lookNeighbors.get(k).getCol()]<14&&map[lookNeighbors.get(k).getRow()][lookNeighbors.get(k).getCol()]>4){
-                            hintsAround=true;
-                            break;
+                        if(myWorld.world[lookNeighbors.get(k).getRow()][lookNeighbors.get(k).getCol()]>10/*&&map[lookNeighbors.get(k).getRow()][lookNeighbors.get(k).getCol()]>4*/){
+                            couner++;
                         }
-                        hintsAround=false;
+                    }
+                    if(couner==lookNeighbors.size()){
+                        map[i][j]=20+myWorld.getTileId(lookNeighbors.get(0))%10;
+                    }
+                    else {
+                        if (myWorld.getTileId(looking) == 0 && myWorld.visible[i][j]) {
+                            map[i][j] = 11;
+                        } else if (myWorld.getTileId(looking) < 4 && myWorld.visible[i][j]) {
+                            map[i][j] = 20;
+                        } else if (myWorld.getTileId(looking) == 4 && myWorld.visible[i][j]) {
+                            map[i][j] = 1;
+                        } else if (myWorld.getTileId(looking) < 14 && myWorld.visible[i][j]) {
+                            map[i][j] = 15;
+                        } else if (myWorld.getTileId(looking) == 14 && myWorld.visible[i][j]) {
+                            map[i][j] = 5;
+                        } else {
+                            map[i][j] = 10;
+                        }
                     }
                 }
             }
         }
-        System.out.println(Arrays.deepToString(map));
+        for(int i=0; i<myWorld.getNumRows(); i++){
+            for(int j=0; j< myWorld.getNumCols(); j++){
+                System.out.print(map[i][j]+" | ");
+            }
+            System.out.println();
+            System.out.println();
+        }
+        System.out.println();
         return map;
     }
 
-    private Location findTarget(int[][]map) {
+    private Location findTarget(boolean[][]beenThere, Location spot) {
+        if(map[spot.getRow()][spot.getCol()]==10){
+            return spot;
+        }
+        beenThere[spot.getRow()][spot.getCol()]=true;
+        ArrayList<Location> blackAdam =myWorld.getNeighbors(spot);
+        for(int i=0; blackAdam.size()>i; i++){
+            if(!beenThere[blackAdam.get(i).getRow()][blackAdam.get(i).getCol()])
+                return findTarget(beenThere,blackAdam.get(i));
+        }
         return null;
     }
 
