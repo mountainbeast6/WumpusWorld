@@ -1,6 +1,7 @@
 package com.miller;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.awt.*;
@@ -19,7 +20,7 @@ public class Dude {
     private boolean killedWumpus = false;
     private boolean[][] acorn;
     int[][] map;
-    private Stack<Location> PathFinding;
+    private myDoublyLinkedList<Location> PathFinding;
 
     public Dude(Location loc, WumpusWorld myWorld) {
         this.loc = loc;
@@ -41,12 +42,44 @@ public class Dude {
             moveUp();
     }
     public void pathingSolution(){
-        map=weightMap();
-        Location target = findTarget(acorn, loc);
-        loc.setCol(target.getCol());
-        loc.setRow(target.getRow());
         myWorld.makeVisible(loc);
-        totalSteps++;
+        if(PathFinding.size==0|| PathFinding==null) {
+            map = weightMap();
+            Location target = findTarget(acorn, loc);
+            PathFinding=greedy(loc, target);
+        }
+        else {
+            loc.setRow(PathFinding.get(PathFinding.size-1).getRow());
+            loc.setCol(PathFinding.get(PathFinding.size-1).getCol());
+            totalSteps++;
+        }
+    }
+    private myDoublyLinkedList<Location> greedy(Location start, Location end){
+        myDoublyLinkedList<Location> send = new myDoublyLinkedList<>();
+        int x=start.getRow();
+        int y=start.getCol();
+        while(x!= end.getRow()){
+            if(x<end.getRow()){
+                x++;
+            }
+            else{
+                x--;
+            }
+            send.addLast(new Location(x,y));
+        }
+        while(y!= end.getCol()){
+            if(y<end.getCol()){
+                y++;
+            }
+            else{
+                y--;
+            }
+            send.addLast(new Location(x,y));
+        }
+        return send;
+    }
+    public myDoublyLinkedList setPath() {
+        return PathFinding;
     }
 
     private int[][] weightMap() {
@@ -75,7 +108,7 @@ public class Dude {
                             couner++;
                         }
                     }
-                    if(couner==lookNeighbors.size()){
+                    if(couner==myWorld.getNeighbors(looking).size()){
                         map[i][j]=20+myWorld.getTileId(lookNeighbors.get(0))%10;
                     }
                     else {
@@ -86,6 +119,7 @@ public class Dude {
                         } else if (myWorld.getTileId(looking) == 4 && myWorld.visible[i][j]) {
                             map[i][j] = 1;
                         } else if (myWorld.getTileId(looking) < 14 && myWorld.visible[i][j]) {
+                            hasGold=true;
                             map[i][j] = 15;
                         } else if (myWorld.getTileId(looking) == 14 && myWorld.visible[i][j]) {
                             map[i][j] = 5;
@@ -108,6 +142,9 @@ public class Dude {
     }
 
     private Location findTarget(boolean[][]beenThere, Location spot) {
+        if(hasGold){
+            return new Location(9,0);
+        }
         if(map[spot.getRow()][spot.getCol()]==10){
             return spot;
         }

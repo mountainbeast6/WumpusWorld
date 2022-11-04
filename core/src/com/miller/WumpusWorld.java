@@ -127,6 +127,33 @@ public class WumpusWorld {
 
         return locs;
     }
+    public boolean hasVisibleNeighbors(Location loc){
+        ArrayList<Location>list=getNeighbors(loc);
+        boolean tuff = false;
+        for(int i=0; i<list.size();i++)
+            if(visible[list.get(i).getRow()][list.get(i).getCol()]) {
+                tuff=true;
+            }
+        return tuff;
+    }
+    public ArrayList<Location> getVisibleNeighbors(Location loc) {
+        Location above = new Location(loc.getRow()-1, loc.getCol());
+        Location below = new Location(loc.getRow()+1, loc.getCol());
+        Location right = new Location(loc.getRow(), loc.getCol()+1);
+        Location left = new Location(loc.getRow(), loc.getCol()-1);
+
+        ArrayList<Location> locs = new ArrayList<>();
+        if(isValid(above)&&hasVisibleNeighbors(above))
+            locs.add(above);
+        if(isValid(below)&&hasVisibleNeighbors(below))
+            locs.add(below);
+        if(isValid(right)&&hasVisibleNeighbors(right))
+            locs.add(right);
+        if(isValid(left)&&hasVisibleNeighbors(left))
+            locs.add(left);
+
+        return locs;
+    }
 
     public void placeTile(int tileId, Location loc) {
         if(isValid(loc)) {
